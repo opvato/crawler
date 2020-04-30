@@ -1,0 +1,27 @@
+{
+  "name": "crawler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/realign-app/crawler.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/realign-app/crawler/issues"
+  },
+  "homepage": "https://github.com/realign-app/crawler#readme",
+  "dependencies": {
+    "@google-cloud/datastore": "^5.1.0",
+    "@google-cloud/pubsub": "^1.7.2",
+    "axios": "^0.19.2",
+    "franc-min": "^5.0.0",
+    "jsdom": "^16.2.2",
+    "readability": "git+https://github.com/mozilla/readability.git"
+  }
+}
