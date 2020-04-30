@@ -27,28 +27,27 @@ const newArticlePublisher = pubSub.topic(process.env.NEW_ARTICLE_TOPIC);
  * @param {!Object} context Metadata for the event.
  */
 exports.crawler = async (event, context) => {
-    return;
-    const url = Buffer.from(event.data, 'base64').toString();
-    if (!event.attributes || !event.attributes.parentUrl || !isLinkWhiteListed(event.attributes.parentUrl)) {
-        console.log('parent url not whitelisted', event.attributes.parentUrl);
+    const { from, to } = JSON.parse(Buffer.from(event.data, 'base64').toString());
+    if (!from || isLinkWhiteListed(from)) {
+        console.log('parent url not whitelisted', from);
         return;
     }
-    if (blacklist.some(r => url.match(r))) {
-        console.log('blacklisted url', url);
+    if (blacklist.some(r => to.match(r))) {
+        console.log('blacklisted url', to);
         return;
     }
 
-    if (await isUrlAlreadyCrawled(url)) {
-        console.log('already crawled', url);
+    if (await isUrlAlreadyCrawled(to)) {
+        console.log('already crawled', to);
         return;
     }
-    const article = await getArticle(url);
+    const article = await getArticle(to);
     if (!article) {
         return;
     }
     const links = getArticleLinks(article);
-    await publishLinks(links, url);
-    await saveArticle(url, article, links);
+    await publishLinks(links, to);
+    await saveArticle(to, article, links);
 };
 
 async function isUrlAlreadyCrawled(url) {
@@ -118,12 +117,12 @@ function isLinkWhiteListed(url) {
 }
 
 /**
- * @param links
- * @param parentUrl
+ * @param {String[]} links
+ * @param {String} parentUrl
  * @returns {Promise<string[]>}
  */
 async function publishLinks(links, parentUrl) {
-    return Promise.all(links.map(link => newLinkPublisher.publish(Buffer.from(link), { parentUrl })))
+    return Promise.all(links.map(link => newLinkPublisher.publish(Buffer.from(JSON.stringify({to: link, from: parentUrl})))))
 }
 
 /**
