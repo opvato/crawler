@@ -46,8 +46,10 @@ exports.crawler = async (event, context) => {
         return;
     }
     const links = getArticleLinks(article);
-    await publishLinks(links, to);
-    await saveArticle(to, article, links);
+    await Promise.all([
+        publishLinks(links, to),
+        saveArticle(to, article, links)
+    ])
 };
 
 async function isUrlAlreadyCrawled(url) {
@@ -133,13 +135,15 @@ async function publishLinks(links, parentUrl) {
  */
 async function saveArticle(url, article, links) {
     try {
-        await datastore.save({
-            key: datastore.key([process.env.DATASTORE_KIND, url]),
-            data: {
-                crawledAt: Date.now()
-            },
-        });
-        await newArticlePublisher.publish(Buffer.from(JSON.stringify({url, article, links})))
+        await Promise.all([
+            datastore.save({
+                key: datastore.key([process.env.DATASTORE_KIND, url]),
+                data: {
+                    crawledAt: Date.now()
+                },
+            }),
+            newArticlePublisher.publish(Buffer.from(JSON.stringify({url, article, links})))
+        ])
     } catch (e) {
         console.error('save error', e.message);
     }
